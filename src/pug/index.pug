@@ -6,39 +6,40 @@ html(lang="ja")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title local memo
         link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css")
-        link(rel="stylesheet", href="./style.css")
     body.m-5
         .block
-            h1.title local memo ~ローカルストレージを試す~
+            h1.title local memo
             p.subtitle ローカルに保存してるからって安全なわけではありません。なんなら手元でtxtファイル作って管理したほうがよっぽど安全だと思います
                 a(href="https://www.rdegges.com/2018/please-stop-using-local-storage/") 参考元/
                 a(href="https://techracho.bpsinc.jp/hachi8833/2019_10_09/80851") 参考元（日本語訳）
-        .block
+        .block#app
             article.columns
                 aside.left-side.colum.menu.box
                     p.menu-label files
                     ul.menu-list
                         li
-                            a#new 新規ファイル
+                            button(v-on:click="newFileBefore")#new.button.is-small.is-white 新規ファイル
                         li
-                            a#overwritingSave 上書き保存
+                            button(v-on:click="overwritingSave")#overwritingSave.button.is-small.is-white 上書き保存
                         li
-                            a#saveAs 名前を付けて保存
+                            button(v-on:click="saveAsBefore")#saveAs.button.is-small.is-white 名前を付けて保存
+                            form(action="" v-if="saveAsInputSeen")
+                                input(type="text" v-on:submit.prevent="saveAsFileName" ref="saveAsFileName" v-if="saveAsInputSeen").input.is-primary
                     p.menu-label upload
                     ul.menu-list
                         li
-                            a#upload ローカルからアップロードする
+                            button#upload.button.is-small.is-white ローカルからアップロードする
                 .main.column.is-three-fifths
                     #editorTabs.tabs.is-boxed
                         ul
-                            //li.is-active
-                            //    a untitled
-                    textarea.textarea
+                            tab-item(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id")
+                    textarea(v-model="fileList[getActiveIndex(fileList)].txt" ref="editor").textarea
                 .right-side.colum.box
-                    aside.left-side.colum.menu
-                        p.menu-label files
+                    aside#memoList.left-side.colum.menu
+                        p.menu-label memos
                         ul.menu-list
-                            li
-                                a untitled
+                            tab-item(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id" )
+                            form(v-on:submit.prevent="newFileAfter")
+                                input(ref="newFileName" placeholder="new file name" v-if="newFileInputSeen")#newFileNameInput.input.is-primary
         script(src="./bundle.js")
         script(src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js")
