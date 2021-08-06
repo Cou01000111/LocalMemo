@@ -18,7 +18,7 @@ var fileStorage = {
 };
 Vue.component('tab-item', {
     props: ['file'],
-    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a>{{ file.fileName }}</a></li>'
+    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a @click="changeActive(file)">{{ file.fileName }}</a></li>'
 });
 var app = new Vue({
     el: '#app',
@@ -29,10 +29,6 @@ var app = new Vue({
     },
     methods: {
         newFileBefore: function () {
-            // newFileNameから新規作成ファイル名を取得
-            // 追加前のfileListのisActiveを全てfalseにする
-            // isActiveがtrueのFileをpush
-            console.log('push new file');
             app.newFileInputSeen = true;
         },
         newFileAfter: function () {
@@ -54,7 +50,7 @@ var app = new Vue({
         overwritingSave: function () {
             console.log("push overwriting file " + app.$refs.editor.value);
             if (app.$refs.editor.value.length)
-                app.fileList[getActiveIndex(app.fileList)].txt = app.$refs.editor.value;
+                app.fileList[app.getActiveIndex(app.fileList)].txt = app.$refs.editor.value;
         },
         saveAsBefore: function () {
             console.log('push save as');
@@ -85,6 +81,10 @@ var app = new Vue({
                 console.error('active file is not exits');
             else
                 return rtn_value;
+        },
+        changeActive: function (file) {
+            app.fileList.map(function (file) { file.isActive = false; });
+            app.fileList[app.fileList.indexOf(file)].isActive = true;
         }
     },
     watch: {

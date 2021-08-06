@@ -28,7 +28,7 @@ var fileStorage = {
 
 Vue.component('tab-item', {
     props: ['file'],
-    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a>{{ file.fileName }}</a></li>'
+    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a @click="changeActive(file)">{{ file.fileName }}</a></li>'
 })
 
 var app = new Vue({
@@ -40,10 +40,6 @@ var app = new Vue({
     },
     methods: {
         newFileBefore: () => {
-            // newFileNameから新規作成ファイル名を取得
-            // 追加前のfileListのisActiveを全てfalseにする
-            // isActiveがtrueのFileをpush
-            console.log('push new file');
             app.newFileInputSeen = true;
         },
         newFileAfter: () => {
@@ -65,7 +61,7 @@ var app = new Vue({
         overwritingSave: () => {
             console.log(`push overwriting file ${app.$refs.editor.value}`);
             if (app.$refs.editor.value.length)
-                app.fileList[getActiveIndex(app.fileList)].txt = app.$refs.editor.value;
+                app.fileList[app.getActiveIndex(app.fileList)].txt = app.$refs.editor.value;
         },
         saveAsBefore: () => {
             console.log('push save as');
@@ -85,7 +81,7 @@ var app = new Vue({
             var index = app.fileList.indexOf(item)
             app.fileList.splice(index, 1)
         },
-        getActiveIndex: function(fileList: Array<File>) {
+        getActiveIndex: function (fileList: Array<File>) {
             var rtn_value: number = -1;
             console.log(fileList);
             fileList.forEach((file: File, index: number) => {
@@ -95,6 +91,10 @@ var app = new Vue({
                 console.error('active file is not exits');
             else
                 return rtn_value;
+        },
+        changeActive: function (file: File) {
+            app.fileList.map((file: File) => { file.isActive = false });
+            app.fileList[app.fileList.indexOf(file)].isActive = true;
         }
     },
     watch: {
@@ -116,10 +116,7 @@ var app = new Vue({
                 txt: "",
                 isActive: true
             });
-
         console.log('-loaded to page-');
         console.log(this.fileList);
     }
 });
-
-function getActiveIndex
