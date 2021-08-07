@@ -3,7 +3,8 @@ interface File {
     id: number,
     fileName: string,
     txt: string,
-    isActive: boolean
+    isActive: boolean,
+    isOpen: boolean
 }
 
 var STORAGE_KEY = 'local-memo'
@@ -26,17 +27,15 @@ var fileStorage = {
     }
 }
 
-Vue.component('tab-item', {
-    props: ['file'],
-    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a @click="changeActive(file)">{{ file.fileName }}</a></li>'
-})
-
 var app = new Vue({
     el: '#app',
     data: {
         fileList: new Array<File>(),
+        openFileList: new Array<File>(),
         saveAsInputSeen: false,
-        newFileInputSeen: false
+        newFileInputSeen: false,
+        activeText: '',
+        editorSeen: true
     },
     methods: {
         newFileBefore: () => {
@@ -53,10 +52,12 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: fileName.value,
                 txt: "",
-                isActive: true
+                isActive: true,
+                isOpen: true
             });
             fileName.value = '';
             app.newFileInputSeen = false;
+            app.editorSeen = true;
         },
         overwritingSave: () => {
             console.log(`push overwriting file ${app.$refs.editor.value}`);
@@ -72,18 +73,21 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: app.$refs.saveAsFileName.value,
                 txt: app.$refs.editor.value,
-                isActive: true
+                isActive: true,
+                isOpen: true
             });
             app.saveAsInputSeen = false;
         },
-        removeFile: (item: File) => {
-            console.log('called rm file');
-            var index = app.fileList.indexOf(item)
-            app.fileList.splice(index, 1)
+        removeFile: (file: File) => {
+            var res = confirm(file.fileName + 'を削除します。本当によろしいですか？');
+            if (res != true) return;
+            var index = app.fileList.indexOf(file);
+            app.fileList.splice(index, 1);
+            if (app.fileList.length == 0)
+                app.editorSeen = false;
         },
         getActiveIndex: function (fileList: Array<File>) {
             var rtn_value: number = -1;
-            console.log(fileList);
             fileList.forEach((file: File, index: number) => {
                 if (file.isActive == true) rtn_value = index;
             });
@@ -95,6 +99,13 @@ var app = new Vue({
         changeActive: function (file: File) {
             app.fileList.map((file: File) => { file.isActive = false });
             app.fileList[app.fileList.indexOf(file)].isActive = true;
+            app.activeText = app.fileList[app.fileList.indexOf(file)].txt;
+        },
+        rmFileTab: function (file: File) {
+            app.fileList[app.fileList.indexOf(file)].isActive = false;
+            app.fileList[app.fileList.indexOf(file)].isOpen = false;
+            if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) + 1]) app.fileList[app.fileList.indexOf(file) + 1].isOpen = true;
+            else if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) - 1]) app.fileList[app.fileList.indexOf(file) - 1].isOpen = true;
         }
     },
     watch: {
@@ -102,9 +113,11 @@ var app = new Vue({
             handler: (fileList: Array<File>) => {
                 console.log('save file to storage');
                 fileStorage.save(fileList);
+                app.openFileList = fileList.filter(file => file.isOpen);
+                app.activeText = app.fileList[app.getActiveIndex(app.fileList)].txt;
             },
             deep: true
-        }
+        },
     },
     created() {
         this.fileList = fileStorage.fetch();
@@ -114,9 +127,15 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: 'untitled',
                 txt: "",
-                isActive: true
+                isActive: true,
+                isOpen: true,
             });
+        this.openFileList = this.fileList.filter((file: File) => file.isOpen == true);
+
         console.log('-loaded to page-');
+        console.log('list');
         console.log(this.fileList);
+        console.log('open list');
+        console.log(this.openFileList);
     }
 });

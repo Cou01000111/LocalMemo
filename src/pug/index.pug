@@ -32,14 +32,22 @@ html(lang="ja")
                 .main.column.is-three-fifths
                     #editorTabs.tabs.is-boxed
                         ul
-                            tab-item(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id")
-                    textarea(v-model="fileList[getActiveIndex(fileList)].txt" ref="editor").textarea
+                            li(v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}")
+                                a(v-on:click="changeActive(file)") {{ file.fileName }}
+                                button(v-on:click="rmFileTab(file)").delete.is-small
+                    textarea(v-if="editorSeen" v-model="activeText" ref="editor").textarea
                 .right-side.colum.box
                     aside#memoList.left-side.colum.menu
                         p.menu-label memos
                         ul.menu-list
-                            tab-item(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id" )
+                            li(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id").m
+                                a(v-on:click="changeActive(file)") {{ file.fileName }}
+                                button(v-on:click="removeFile").button.is-danger.is-outlined.is-small
+                                    span.icon.is-small
+                                        i.far.fa-trash-alt
                             form(v-on:submit.prevent="newFileAfter")
                                 input(ref="newFileName" placeholder="new file name" v-if="newFileInputSeen")#newFileNameInput.input.is-primary
         script(src="./bundle.js")
         script(src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js")
+        .
+            <script src="https://kit.fontawesome.com/a198b76e1e.js" crossorigin="anonymous"></script>

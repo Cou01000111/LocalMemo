@@ -16,16 +16,15 @@ var fileStorage = {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(fileList));
     }
 };
-Vue.component('tab-item', {
-    props: ['file'],
-    template: '<li v-bind:class="file.isActive?\'is-active\':\'\'"><a @click="changeActive(file)">{{ file.fileName }}</a></li>'
-});
 var app = new Vue({
     el: '#app',
     data: {
         fileList: new Array(),
+        openFileList: new Array(),
         saveAsInputSeen: false,
-        newFileInputSeen: false
+        newFileInputSeen: false,
+        activeText: '',
+        editorSeen: true
     },
     methods: {
         newFileBefore: function () {
@@ -42,10 +41,12 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: fileName.value,
                 txt: "",
-                isActive: true
+                isActive: true,
+                isOpen: true
             });
             fileName.value = '';
             app.newFileInputSeen = false;
+            app.editorSeen = true;
         },
         overwritingSave: function () {
             console.log("push overwriting file " + app.$refs.editor.value);
@@ -61,18 +62,22 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: app.$refs.saveAsFileName.value,
                 txt: app.$refs.editor.value,
-                isActive: true
+                isActive: true,
+                isOpen: true
             });
             app.saveAsInputSeen = false;
         },
-        removeFile: function (item) {
-            console.log('called rm file');
-            var index = app.fileList.indexOf(item);
+        removeFile: function (file) {
+            var res = confirm(file.fileName + 'を削除します。本当によろしいですか？');
+            if (res != true)
+                return;
+            var index = app.fileList.indexOf(file);
             app.fileList.splice(index, 1);
+            if (app.fileList.length == 0)
+                app.editorSeen = false;
         },
         getActiveIndex: function (fileList) {
             var rtn_value = -1;
-            console.log(fileList);
             fileList.forEach(function (file, index) {
                 if (file.isActive == true)
                     rtn_value = index;
@@ -85,6 +90,15 @@ var app = new Vue({
         changeActive: function (file) {
             app.fileList.map(function (file) { file.isActive = false; });
             app.fileList[app.fileList.indexOf(file)].isActive = true;
+            app.activeText = app.fileList[app.fileList.indexOf(file)].txt;
+        },
+        rmFileTab: function (file) {
+            app.fileList[app.fileList.indexOf(file)].isActive = false;
+            app.fileList[app.fileList.indexOf(file)].isOpen = false;
+            if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) + 1])
+                app.fileList[app.fileList.indexOf(file) + 1].isOpen = true;
+            else if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) - 1])
+                app.fileList[app.fileList.indexOf(file) - 1].isOpen = true;
         }
     },
     watch: {
@@ -92,6 +106,8 @@ var app = new Vue({
             handler: function (fileList) {
                 console.log('save file to storage');
                 fileStorage.save(fileList);
+                app.openFileList = fileList.filter(function (file) { return file.isOpen; });
+                app.activeText = app.fileList[app.getActiveIndex(app.fileList)].txt;
             },
             deep: true
         }
@@ -104,9 +120,14 @@ var app = new Vue({
                 id: fileStorage.uid++,
                 fileName: 'untitled',
                 txt: "",
-                isActive: true
+                isActive: true,
+                isOpen: true
             });
+        this.openFileList = this.fileList.filter(function (file) { return file.isOpen == true; });
         console.log('-loaded to page-');
+        console.log('list');
         console.log(this.fileList);
+        console.log('open list');
+        console.log(this.openFileList);
     }
 });

@@ -40,16 +40,20 @@
         <div class="main column is-three-fifths">
           <div class="tabs is-boxed" id="editorTabs">
             <ul>
-              <tab-item v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"></tab-item>
+              <li v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}"><a v-on:click="changeActive(file)">{{ file.fileName }}</a>
+                <button class="delete is-small" v-on:click="rmFileTab(file)"></button>
+              </li>
             </ul>
           </div>
-          <textarea class="textarea" v-model="fileList[getActiveIndex(fileList)].txt" ref="editor"></textarea>
+          <textarea class="textarea" v-if="editorSeen" v-model="activeText" ref="editor"></textarea>
         </div>
         <div class="right-side colum box">
           <aside class="left-side colum menu" id="memoList">
             <p class="menu-label">memos</p>
             <ul class="menu-list">
-              <tab-item v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"></tab-item>
+              <li class="m" v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"><a v-on:click="changeActive(file)">{{ file.fileName }}</a>
+                <button class="button is-danger is-outlined is-small" v-on:click="removeFile"><span class="icon is-small"><i class="far fa-trash-alt"></i></span></button>
+              </li>
               <form v-on:submit.prevent="newFileAfter">
                 <input class="input is-primary" ref="newFileName" placeholder="new file name" v-if="newFileInputSeen" id="newFileNameInput">
               </form>
@@ -59,6 +63,6 @@
       </article>
     </div>
     <script src="./bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script><script src="https://kit.fontawesome.com/a198b76e1e.js" crossorigin="anonymous"></script>
   </body>
 </html>
