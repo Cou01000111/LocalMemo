@@ -131,7 +131,6 @@ var app = new Vue({
                 isOpen: true,
             });
         this.openFileList = this.fileList.filter((file: File) => file.isOpen == true);
-
         console.log('-loaded to page-');
         console.log('list');
         console.log(this.fileList);

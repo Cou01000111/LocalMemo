@@ -40,9 +40,9 @@
         <div class="main column is-three-fifths">
           <div class="tabs is-boxed" id="editorTabs">
             <ul>
-              <li v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}"><a v-on:click="changeActive(file)">{{ file.fileName }}</a>
-                <button class="delete is-small" v-on:click="rmFileTab(file)"></button>
-              </li>
+              <li v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}"><a>
+                  <p v-on:click="changeActive(file)">{{ file.fileName }}</p>
+                  <button class="delete is-small" v-on:click="rmFileTab(file)"></button></a></li>
             </ul>
           </div>
           <textarea class="textarea" v-if="editorSeen" v-model="activeText" ref="editor"></textarea>
@@ -51,9 +51,9 @@
           <aside class="left-side colum menu" id="memoList">
             <p class="menu-label">memos</p>
             <ul class="menu-list">
-              <li class="m" v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"><a v-on:click="changeActive(file)">{{ file.fileName }}</a>
-                <button class="button is-danger is-outlined is-small" v-on:click="removeFile"><span class="icon is-small"><i class="far fa-trash-alt"></i></span></button>
-              </li>
+              <li class="m" v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"><a>
+                  <p v-on:click="changeActive(file)">{{ file.fileName }}</p>
+                  <button class="button is-danger is-outlined is-small" v-on:click="removeFile"><span class="icon is-small"><i class="far fa-trash-alt"></i></span></button></a></li>
               <form v-on:submit.prevent="newFileAfter">
                 <input class="input is-primary" ref="newFileName" placeholder="new file name" v-if="newFileInputSeen" id="newFileNameInput">
               </form>

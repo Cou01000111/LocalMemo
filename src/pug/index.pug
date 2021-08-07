@@ -33,18 +33,20 @@ html(lang="ja")
                     #editorTabs.tabs.is-boxed
                         ul
                             li(v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}")
-                                a(v-on:click="changeActive(file)") {{ file.fileName }}
-                                button(v-on:click="rmFileTab(file)").delete.is-small
+                                a
+                                    p(v-on:click="changeActive(file)") {{ file.fileName }}
+                                    button(v-on:click="rmFileTab(file)").delete.is-small
                     textarea(v-if="editorSeen" v-model="activeText" ref="editor").textarea
                 .right-side.colum.box
                     aside#memoList.left-side.colum.menu
                         p.menu-label memos
                         ul.menu-list
                             li(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id").m
-                                a(v-on:click="changeActive(file)") {{ file.fileName }}
-                                button(v-on:click="removeFile").button.is-danger.is-outlined.is-small
-                                    span.icon.is-small
-                                        i.far.fa-trash-alt
+                                a
+                                    p(v-on:click="changeActive(file)") {{ file.fileName }}
+                                    button(v-on:click="removeFile").button.is-danger.is-outlined.is-small
+                                        span.icon.is-small
+                                            i.far.fa-trash-alt
                             form(v-on:submit.prevent="newFileAfter")
                                 input(ref="newFileName" placeholder="new file name" v-if="newFileInputSeen")#newFileNameInput.input.is-primary
         script(src="./bundle.js")
