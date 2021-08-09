@@ -14,42 +14,42 @@ html(lang="ja")
                 a(href="https://techracho.bpsinc.jp/hachi8833/2019_10_09/80851") 参考元（日本語訳）
         .block#app
             article.columns
-                aside.left-side.colum.menu.box
+                aside.left-side.colum.menu.box.is-2
                     p.menu-label files
                     ul.menu-list
                         li
-                            button(v-on:click="newFileBefore")#new.button.is-small.is-white 新規ファイル
+                            button(v-on:click="seenInput")#new.button.is-small.is-white 新規ファイル
                         li
                             button(v-on:click="overwritingSave")#overwritingSave.button.is-small.is-white 上書き保存
                         li
-                            button(v-on:click="saveAsBefore")#saveAs.button.is-small.is-white 名前を付けて保存
-                            form(action="" v-if="saveAsInputSeen")
-                                input(type="text" v-on:submit.prevent="saveAsFileName" ref="saveAsFileName" v-if="saveAsInputSeen").input.is-primary
-                    p.menu-label upload
-                    ul.menu-list
+                            button(v-on:click="saveAsInputSeen=true")#saveAs.button.is-small.is-white 名前を付けて保存
+                            form(action="" v-if="saveAsInputSeen" v-on:submit.prevent="saveAs")
+                                input(type="text" ref="saveAsFileName" v-if="saveAsInputSeen").input.is-primary
                         li
-                            button#upload.button.is-small.is-white ローカルからアップロードする
-                .main.column.is-three-fifths
+                            button(v-on:click="rmFileListSeen=true")#saveAs.button.is-small.is-white ファイルを削除
+                            div(v-if="rmFileListSeen")
+                                div(v-for="file in fileList")#delFileList
+                                    input(type="checkbox" v-model="rmFileIdList" v-bind:value="file.id" v-bind:id="file.id")
+                                    label {{ file.fileName }}
+                                button(v-on:click="removeFile").button.is-danger.is-light 削除
+                                button(v-on:click="rmFileListSeen=false").button.is-primary.is-light キャンセル
+                .main.column.is-7
                     #editorTabs.tabs.is-boxed
                         ul
                             li(v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}")
                                 a
                                     p(v-on:click="changeActive(file)") {{ file.fileName }}
-                                    button(v-on:click="rmFileTab(file)").delete.is-small
-                    textarea(v-if="editorSeen" v-model="activeText" ref="editor").textarea
-                .right-side.colum.box
+                                    button(v-on:click="closeFile(file)").delete.is-small.ml-2
+                    textarea(v-if="editorSeen" v-model="fileList.filter(file=>file.isActive)[0].txt" ref="editor" v-on:input="overwritingSave").textarea
+                .right-side.column.box.is-3
                     aside#memoList.left-side.colum.menu
                         p.menu-label memos
                         ul.menu-list
-                            li(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id").m
-                                a
-                                    p(v-on:click="changeActive(file)") {{ file.fileName }}
-                                    button(v-on:click="removeFile").button.is-danger.is-outlined.is-small
-                                        span.icon.is-small
-                                            i.far.fa-trash-alt
-                            form(v-on:submit.prevent="newFileAfter")
+                            li(v-for="file in fileList" v-bind:file="file" v-bind:key="file.id")
+                                a(v-on:click="openFile(file)").columns
+                                    p.is-four-fifths.column {{ file.fileName }}
+                            form(v-on:submit.prevent="newFile")
                                 input(ref="newFileName" placeholder="new file name" v-if="newFileInputSeen")#newFileNameInput.input.is-primary
         script(src="./bundle.js")
-        script(src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js")
         .
             <script src="https://kit.fontawesome.com/a198b76e1e.js" crossorigin="anonymous"></script>

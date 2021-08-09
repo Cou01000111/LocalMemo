@@ -14,47 +14,51 @@
     </div>
     <div class="block" id="app">
       <article class="columns">
-        <aside class="left-side colum menu box">
+        <aside class="left-side colum menu box is-2">
           <p class="menu-label">files</p>
           <ul class="menu-list">
             <li>
-              <button class="button is-small is-white" v-on:click="newFileBefore" id="new">新規ファイル</button>
+              <button class="button is-small is-white" v-on:click="seenInput" id="new">新規ファイル</button>
             </li>
             <li>
               <button class="button is-small is-white" v-on:click="overwritingSave" id="overwritingSave">上書き保存</button>
             </li>
             <li>
-              <button class="button is-small is-white" v-on:click="saveAsBefore" id="saveAs">名前を付けて保存</button>
-              <form action="" v-if="saveAsInputSeen">
-                <input class="input is-primary" type="text" v-on:submit.prevent="saveAsFileName" ref="saveAsFileName" v-if="saveAsInputSeen">
+              <button class="button is-small is-white" v-on:click="saveAsInputSeen=true" id="saveAs">名前を付けて保存</button>
+              <form action="" v-if="saveAsInputSeen" v-on:submit.prevent="saveAs">
+                <input class="input is-primary" type="text" ref="saveAsFileName" v-if="saveAsInputSeen">
               </form>
             </li>
-          </ul>
-          <p class="menu-label">upload</p>
-          <ul class="menu-list">
             <li>
-              <button class="button is-small is-white" id="upload">ローカルからアップロードする</button>
+              <button class="button is-small is-white" v-on:click="rmFileListSeen=true" id="saveAs">ファイルを削除</button>
+              <div v-if="rmFileListSeen">
+                <div v-for="file in fileList" id="delFileList">
+                  <input type="checkbox" v-model="rmFileIdList" v-bind:value="file.id" v-bind:id="file.id">
+                  <label>{{ file.fileName }}</label>
+                </div>
+                <button class="button is-danger is-light" v-on:click="removeFile">削除</button>
+                <button class="button is-primary is-light" v-on:click="rmFileListSeen=false">キャンセル</button>
+              </div>
             </li>
           </ul>
         </aside>
-        <div class="main column is-three-fifths">
+        <div class="main column is-7">
           <div class="tabs is-boxed" id="editorTabs">
             <ul>
               <li v-for="file in openFileList" v-bind:file="file" v-bind:key="file.id" v-bind:class="{'is-active':file.isActive}"><a>
                   <p v-on:click="changeActive(file)">{{ file.fileName }}</p>
-                  <button class="delete is-small" v-on:click="rmFileTab(file)"></button></a></li>
+                  <button class="delete is-small ml-2" v-on:click="closeFile(file)"></button></a></li>
             </ul>
           </div>
-          <textarea class="textarea" v-if="editorSeen" v-model="activeText" ref="editor"></textarea>
+          <textarea class="textarea" v-if="editorSeen" v-model="fileList.filter(file=&gt;file.isActive)[0].txt" ref="editor" v-on:input="overwritingSave"></textarea>
         </div>
-        <div class="right-side colum box">
+        <div class="right-side column box is-3">
           <aside class="left-side colum menu" id="memoList">
             <p class="menu-label">memos</p>
             <ul class="menu-list">
-              <li class="m" v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"><a>
-                  <p v-on:click="changeActive(file)">{{ file.fileName }}</p>
-                  <button class="button is-danger is-outlined is-small" v-on:click="removeFile"><span class="icon is-small"><i class="far fa-trash-alt"></i></span></button></a></li>
-              <form v-on:submit.prevent="newFileAfter">
+              <li v-for="file in fileList" v-bind:file="file" v-bind:key="file.id"><a class="columns" v-on:click="openFile(file)">
+                  <p class="is-four-fifths column">{{ file.fileName }}</p></a></li>
+              <form v-on:submit.prevent="newFile">
                 <input class="input is-primary" ref="newFileName" placeholder="new file name" v-if="newFileInputSeen" id="newFileNameInput">
               </form>
             </ul>
@@ -62,7 +66,6 @@
         </div>
       </article>
     </div>
-    <script src="./bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script><script src="https://kit.fontawesome.com/a198b76e1e.js" crossorigin="anonymous"></script>
+    <script src="./bundle.js"></script><script src="https://kit.fontawesome.com/a198b76e1e.js" crossorigin="anonymous"></script>
   </body>
 </html>

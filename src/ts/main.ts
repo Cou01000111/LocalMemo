@@ -7,6 +7,8 @@ interface File {
     isOpen: boolean
 }
 
+const _sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 var STORAGE_KEY = 'local-memo'
 var fileStorage = {
     uid: 0,
@@ -34,78 +36,103 @@ var app = new Vue({
         openFileList: new Array<File>(),
         saveAsInputSeen: false,
         newFileInputSeen: false,
-        activeText: '',
-        editorSeen: true
+        //activeText: '',
+        editorSeen: true,
+        rmFileListSeen: false,
+        rmFileIdList: new Array<number>()
     },
     methods: {
-        newFileBefore: () => {
-            app.newFileInputSeen = true;
+        seenInput: async () => {
+            if (app.newFileInputSeen)
+                app.newFileInputSeen = false;
+            else {
+                app.newFileInputSeen = true;
+                await _sleep(100);
+                if (app.$refs.newFileName) {
+                    app.$refs.newFileName.focus();
+                }
+            }
         },
-        newFileAfter: () => {
+        newFile: () => {
             var fileName: any = app.$refs.newFileName;
             if (!fileName.value.length) {
                 alert('新規作成するファイル名を入力してください');
                 return;
             }
             app.fileList.map((file: File) => { file.isActive = false });
-            app.fileList.push({
-                id: fileStorage.uid++,
-                fileName: fileName.value,
-                txt: "",
-                isActive: true,
-                isOpen: true
-            });
+            app.addFile(fileName.value, "");
             fileName.value = '';
             app.newFileInputSeen = false;
             app.editorSeen = true;
         },
         overwritingSave: () => {
-            console.log(`push overwriting file ${app.$refs.editor.value}`);
-            if (app.$refs.editor.value.length)
+            if (app.fileList.filter((file: File) => file.isActive))
                 app.fileList[app.getActiveIndex(app.fileList)].txt = app.$refs.editor.value;
+            else
+                alert('ファイルが開かれていません');
         },
-        saveAsBefore: () => {
-            console.log('push save as');
-            app.saveAsInputSeen = true;
-        },
-        saveAsAfter: () => {
-            app.fileList.push({
-                id: fileStorage.uid++,
-                fileName: app.$refs.saveAsFileName.value,
-                txt: app.$refs.editor.value,
-                isActive: true,
-                isOpen: true
-            });
+        saveAs: () => {
+            var fileName: any = app.$refs.saveAsFileName;
+            if (!fileName.value.length) {
+                alert('ファイル名を入力してください');
+                return;
+            }
+            app.addFile(fileName.value, app.fileList.filter((file: File) => file.isActive)[0].txt);
+            app.fileList.map((file: File) => file.isActive = false);
+            app.openFile(app.fileList.filter((file: File) => file.fileName == fileName.value)[0]);
             app.saveAsInputSeen = false;
         },
-        removeFile: (file: File) => {
-            var res = confirm(file.fileName + 'を削除します。本当によろしいですか？');
+        removeFile: () => {
+            if (app.rmFileIdList.length == 0) {
+                alert('ファイルが一つも選択されていません');
+                return;
+            }
+            //削除確認
+            var res = confirm(app.fileList.filter((file: File) => app.rmFileIdList.some((removeId: number) => file.id == removeId)).map((file: File) => file.fileName).join(',') + 'を削除します。本当によろしいですか？');
             if (res != true) return;
-            var index = app.fileList.indexOf(file);
-            app.fileList.splice(index, 1);
-            if (app.fileList.length == 0)
-                app.editorSeen = false;
+            //fileListからrmFileIdListに当てはまるファイルを取り除いたもので更新
+            app.fileList = app.fileList
+                .filter((file: File) => !(app.rmFileIdList.some((id: number) => id == file.id)));
+            app.rmFileIdList = new Array<number>();
+            app.saveAsInputSeen = false;
+            if (!app.fileList.some((file: File) => file.isActive) && app.fileList[0])
+                app.fileList[0].isActive = true;
+            app.rmFileListSeen = false;
         },
         getActiveIndex: function (fileList: Array<File>) {
             var rtn_value: number = -1;
-            fileList.forEach((file: File, index: number) => {
-                if (file.isActive == true) rtn_value = index;
-            });
-            if (rtn_value == -1)
+            fileList.map((file: File, index: number) => { if (file.isActive == true) rtn_value = index; })
+            if (rtn_value == -1) {
                 console.error('active file is not exits');
+                return -1;
+            }
             else
                 return rtn_value;
         },
         changeActive: function (file: File) {
             app.fileList.map((file: File) => { file.isActive = false });
             app.fileList[app.fileList.indexOf(file)].isActive = true;
-            app.activeText = app.fileList[app.fileList.indexOf(file)].txt;
         },
-        rmFileTab: function (file: File) {
+        closeFile: function (file: File) {
             app.fileList[app.fileList.indexOf(file)].isActive = false;
             app.fileList[app.fileList.indexOf(file)].isOpen = false;
-            if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) + 1]) app.fileList[app.fileList.indexOf(file) + 1].isOpen = true;
-            else if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) - 1]) app.fileList[app.fileList.indexOf(file) - 1].isOpen = true;
+            if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) + 1])
+                app.fileList[app.fileList.indexOf(file) + 1].isActive = true;
+            else if (app.fileList.length > 1 && app.fileList[app.fileList.indexOf(file) - 1])
+                app.fileList[app.fileList.indexOf(file) - 1].isActive = true;
+        },
+        openFile: function (file: File) {
+            this.changeActive(file);
+            app.fileList[app.fileList.indexOf(file)].isOpen = true;
+        },
+        addFile(fileName: string, fileTxt: string) {
+            app.fileList.push({
+                id: fileStorage.uid++,
+                fileName: fileName,
+                txt: fileTxt,
+                isActive: true,
+                isOpen: true
+            });
         }
     },
     watch: {
@@ -123,18 +150,12 @@ var app = new Vue({
         this.fileList = fileStorage.fetch();
         //ファイルが一つもない場合
         if (this.fileList.length == 0)
-            this.fileList.push({
-                id: fileStorage.uid++,
-                fileName: 'untitled',
-                txt: "",
-                isActive: true,
-                isOpen: true,
-            });
+            this.addFile('untitled', "");
         this.openFileList = this.fileList.filter((file: File) => file.isOpen == true);
-        console.log('-loaded to page-');
-        console.log('list');
-        console.log(this.fileList);
-        console.log('open list');
-        console.log(this.openFileList);
+        //console.log('-loaded to page-');
+        //console.log('list');
+        //console.log(this.fileList);
+        //console.log('open list');
+        //console.log(this.openFileList);
     }
 });
