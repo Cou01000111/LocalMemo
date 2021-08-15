@@ -122,11 +122,11 @@ var app = new Vue({
                 app.fileList[app.fileList.indexOf(file) - 1].isActive = true;
         },
         openFile: function (file: File) {
-            this.changeActive(file);
+            app.changeActive(file);
             app.fileList[app.fileList.indexOf(file)].isOpen = true;
         },
         addFile(fileName: string, fileTxt: string) {
-            app.fileList.push({
+            this.fileList.push({
                 id: fileStorage.uid++,
                 fileName: fileName,
                 txt: fileTxt,
@@ -141,21 +141,23 @@ var app = new Vue({
                 console.log('save file to storage');
                 fileStorage.save(fileList);
                 app.openFileList = fileList.filter(file => file.isOpen);
-                app.activeText = app.fileList[app.getActiveIndex(app.fileList)].txt;
             },
             deep: true
         },
     },
     created() {
         this.fileList = fileStorage.fetch();
+        console.log('fetch',this.fileList);
+
         //ファイルが一つもない場合
-        if (this.fileList.length == 0)
+        if (this.fileList.length == 0) {
             this.addFile('untitled', "");
+        }
         this.openFileList = this.fileList.filter((file: File) => file.isOpen == true);
-        //console.log('-loaded to page-');
-        //console.log('list');
-        //console.log(this.fileList);
-        //console.log('open list');
-        //console.log(this.openFileList);
+        console.log('-loaded to page-');
+        console.log('list');
+        console.log(this.fileList);
+        console.log('open list');
+        console.log(this.openFileList);
     }
 });
