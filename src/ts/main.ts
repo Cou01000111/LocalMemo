@@ -147,7 +147,7 @@ var app = new Vue({
     },
     created() {
         this.fileList = fileStorage.fetch();
-        console.log('fetch',this.fileList);
+        console.log('fetch', this.fileList);
 
         //ファイルが一つもない場合
         if (this.fileList.length == 0) {
@@ -155,6 +155,10 @@ var app = new Vue({
             console.log('first boot');
         }
         this.openFileList = this.fileList.filter((file: File) => file.isOpen == true);
+
+        if (this.openFileList.length == 0) {
+            this.fileList[0].isOpen = true;
+        }
         console.log('-loaded to page-');
         console.log('list');
         console.log(this.fileList);

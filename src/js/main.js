@@ -189,6 +189,9 @@ var app = new Vue({
             console.log('first boot');
         }
         this.openFileList = this.fileList.filter(function (file) { return file.isOpen == true; });
+        if (this.openFileList.length == 0) {
+            this.fileList[0].isOpen = true;
+        }
         console.log('-loaded to page-');
         console.log('list');
         console.log(this.fileList);
