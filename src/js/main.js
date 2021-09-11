@@ -189,8 +189,14 @@ var app = new Vue({
             console.log('first boot');
         }
         this.openFileList = this.fileList.filter(function (file) { return file.isOpen == true; });
-        if (this.openFileList.length == 0) {
+        //開かれているファイルがない場合
+        // console.log(this.fileList.filter((file: File) => file.isOpen == true).length == 0 || this.fileList.filter((file: File) => file.isActive == true).length == 0);
+        // console.log(this.fileList.filter((file: File) => file.isOpen == true).length == 0);
+        // console.log(this.fileList.filter((file: File) => file.isActive == true).length == 0);
+        if (this.fileList.filter(function (file) { return file.isOpen == true; }).length == 0 || this.fileList.filter(function (file) { return file.isActive == true; }).length == 0) {
             this.fileList[0].isOpen = true;
+            this.fileList[0].isActive = true;
+            console.log('not opened');
         }
         console.log('-loaded to page-');
         console.log('list');
