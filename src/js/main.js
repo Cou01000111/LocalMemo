@@ -186,6 +186,7 @@ var app = new Vue({
         //ファイルが一つもない場合
         if (this.fileList.length == 0) {
             this.addFile('untitled', "");
+            console.log('first boot');
         }
         this.openFileList = this.fileList.filter(function (file) { return file.isOpen == true; });
         console.log('-loaded to page-');
